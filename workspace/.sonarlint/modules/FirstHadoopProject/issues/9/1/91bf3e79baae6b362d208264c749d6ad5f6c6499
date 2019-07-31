@@ -1,0 +1,19 @@
+
+esquid:S3518C"7Make sure "n" can't be zero before doing this division.(ëó”„øÿÿÿÿHª	RCRITICALZBUG
+}squid:CommentedOutCodeLine2"<This block of commented-out lines of code should be removed.(—ÛóäûÿÿÿÿH¬	RMAJORZ
+CODE_SMELL
+wsquid:CommentedOutCodeLine*"<This block of commented-out lines of code should be removed.(ÿÊË+H§	RMAJORZ
+CODE_SMELL
+„squid:CommentedOutCodeLine{"<This block of commented-out lines of code should be removed.(ôÉ‡óøÿÿÿÿ8’˜ÖØ­-H¥	RMAJORZ
+CODE_SMELL
+„squid:CommentedOutCodeLiney"<This block of commented-out lines of code should be removed.(Ð¿è¥üÿÿÿÿ8’˜ÖØ­-H¤	RMAJORZ
+CODE_SMELL
+xsquid:CommentedOutCodeLine-"<This block of commented-out lines of code should be removed.(ÿþß«H¦	RMAJORZ
+CODE_SMELL
+Gsquid:S1220""Move this file to a named package.H¨	RMINORZ
+CODE_SMELL
+e
+squid:S106Y"9Replace this use of System.out or System.err by a logger.(ƒäØ²H«	RMAJORZ
+CODE_SMELL
+„squid:CommentedOutCodeLinea"<This block of commented-out lines of code should be removed.(ìÆü’ûÿÿÿÿ8’˜ÖØ­-H©	RMAJORZ
+CODE_SMELL

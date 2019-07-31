@@ -1,0 +1,10 @@
+package dataTypes;
+
+public class LoanRecord {
+
+	private Integer loanId;
+	private Integer rating;
+	private Date startDate;
+	private Integer term;
+	private BigDecimal amountReceived = new BigDecimal(0);
+}

@@ -1,0 +1,8 @@
+package dataTypes;
+
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.mapreduce.Partitioner;
+
+public class LoanIdPartitioner extends Partitioner<LoanIDAndTagKey, IntWritable> {
+
+}

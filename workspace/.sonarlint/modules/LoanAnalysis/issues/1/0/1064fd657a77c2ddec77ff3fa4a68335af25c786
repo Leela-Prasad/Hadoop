@@ -1,0 +1,13 @@
+
+]squid:S00108w")Either remove or fill this block of code.(Éò§+8•¢ÌÜÃ-HïRMAJORZ
+CODE_SMELL
+€squid:S00101"MRename this class name to match the regular expression '^[A-Z][a-zA-Z0-9]*$'.(šïõÊûÿÿÿÿHóRMINORZ
+CODE_SMELL
+squid:S00120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(½½³ÀıÿÿÿÿHôRMINORZ
+CODE_SMELL
+squid:CommentedOutCodeLineA"<This block of commented-out lines of code should be removed.(’§’†8ãÂÎ¤Ã-HñRMAJORZ
+CODE_SMELL
+Æ%squid:RedundantThrowsDeclarationCheck"wRemove the declaration of thrown exception 'java.lang.InterruptedException', as it cannot be thrown from method's body.(Çí8ÌÙ…öÃ-HòRMINORZ
+CODE_SMELL
+È%squid:RedundantThrowsDeclarationCheck"yRemove the declaration of thrown exception 'java.lang.ClassNotFoundException', as it cannot be thrown from method's body.(Çí8ÌÙ…öÃ-HğRMINORZ
+CODE_SMELL

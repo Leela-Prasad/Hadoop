@@ -1,0 +1,54 @@
+import java.io.IOException;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.db.DBConfiguration;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+import supportingJobs.Job1_JoinAllData;
+import supportingJobs.Job2_CreateMetrics;
+
+public class LoanAnalysis extends Configured implements Tool {
+
+	public static void deletePreviousOutput(Configuration conf, Path path) {
+		try {
+			FileSystem hdfs = FileSystem.get(conf);
+			hdfs.delete(path, true);
+		} catch (IOException e) {}
+	}
+	
+	public static void main(String[] args) throws Exception {
+		int status = ToolRunner.run(new Configuration(), new LoanAnalysis(), args);
+		System.exit(status);
+	}
+	
+	@Override
+	public int run(String[] args) throws Exception {
+		Path in1 = new Path(args[0]); // ratings file
+		Path in2 = new Path(args[1]); // loan data file
+		Path in3 = new Path(args[2]); // payments file
+		Path out = new Path(args[3]);
+        
+        Configuration conf = new Configuration();
+        conf.set("mapreduce.input.keyvaluelinerecordreader.key.value.separator", ",");
+        
+        deletePreviousOutput(conf, out);
+        
+        Configuration conf2 = new Configuration();
+        DBConfiguration.configureDB(conf2, "com.mysql.jdbc.Driver", "jdbc:mysql://localhost/metrics?user=root&password=xrBouqf2");
+        
+        conf.set(in1.getName(), "1");
+        conf.set(in2.getName(), "2");
+        conf.set(in3.getName(), "3");
+		
+        Job job1 = Job1_JoinAllData.generateAndConfigureJob(in1, in2, in3, out, conf);
+        Job job2 = Job2_CreateMetrics.generateAndConfigureJob(out, conf2);
+        
+		return 0;
+	}
+
+}

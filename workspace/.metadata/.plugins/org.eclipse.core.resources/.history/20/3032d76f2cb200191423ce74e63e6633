@@ -1,0 +1,215 @@
+package dataTypes;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import org.apache.hadoop.io.Writable;
+import org.apache.commons.lang.time.DateUtils;
+
+public class LoanRecord implements Writable {
+
+	Integer loanID;
+	Integer rating;
+	Date startDate;
+	Integer term;
+	Integer amountBorrowed;
+	BigDecimal amountReceived= new BigDecimal(0);
+	Integer latePayments = 0;
+	
+	public void receivePayment(BigDecimal amount, Boolean late) {
+		if (late) latePayments++;
+		amountReceived = amountReceived.add(amount);
+	}
+	
+	public Integer getLoanID() {
+		return loanID;
+	}
+
+	public void setLoanID(Integer loanID) {
+		this.loanID = loanID;
+	}
+
+	public Integer getRating() {
+		return rating;
+	}
+
+	public void setRating(Integer rating) {
+		this.rating = rating;
+	}
+
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public Integer getTerm() {
+		return term;
+	}
+
+	public void setTerm(Integer term) {
+		this.term = term;
+	}
+
+	public Integer getAmountBorrowed() {
+		return amountBorrowed;
+	}
+
+	public void setAmountBorrowed(Integer amountBorrowed) {
+		this.amountBorrowed = amountBorrowed;
+	}
+
+	public BigDecimal getAmountReceived() {
+		return amountReceived;
+	}
+
+	public void setAmountReceived(BigDecimal amountReceived) {
+		this.amountReceived = amountReceived;
+	}
+
+	public Integer getLatePayments() {
+		return latePayments;
+	}
+
+	public void setLatePayments(Integer latePayments) {
+		this.latePayments = latePayments;
+	}
+
+	
+	public LoanRecord(Integer loanID, Integer rating, Date startDate,
+			Integer term, Integer amountBorrowed, BigDecimal amountReceived,
+			 Integer latePayments) {
+		super();
+		this.loanID = loanID;
+		this.rating = rating;
+		this.startDate = startDate;
+		this.term = term;
+		this.amountBorrowed = amountBorrowed;
+		this.amountReceived = amountReceived;
+		this.latePayments = latePayments;
+	}
+
+	public LoanRecord() {}
+	
+	public int finalStatus() {
+		if (amountBorrowed.doubleValue() > amountReceived.doubleValue()) {
+			return 4;
+		}
+		else if (latePayments > 3){
+			return 3;
+		}
+		else {
+			return latePayments;
+		}
+	}
+	
+	public boolean finishesInFuture(Date compareDate) {
+		GregorianCalendar gcActual = new GregorianCalendar();
+		GregorianCalendar gcCompare = new GregorianCalendar();
+		gcActual.setTime(startDate);
+		gcActual.add(GregorianCalendar.MONTH, term);
+		gcCompare.setTime(compareDate);
+		
+		return (DateUtils.truncatedCompareTo(gcActual, gcCompare, Calendar.DAY_OF_MONTH) > 0);
+			
+	}
+	
+	@Override
+	public void readFields(DataInput arg0) throws IOException {
+		this.loanID = arg0.readInt();
+		this.rating  = arg0.readInt();
+		this.startDate = new Date(arg0.readLong());
+		this.term  = arg0.readInt();
+		this.amountBorrowed  = arg0.readInt();
+		this.amountReceived = new BigDecimal(arg0.readUTF());
+		this.latePayments = arg0.readInt();
+	}
+
+	@Override
+	public void write(DataOutput arg0) throws IOException {
+		arg0.writeInt(loanID);
+		arg0.writeInt(rating);
+		arg0.writeLong(startDate.getTime());
+		arg0.writeInt(term);
+		arg0.writeInt(amountBorrowed);
+		arg0.writeUTF(amountReceived.toString());
+		arg0.writeInt(latePayments);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((amountBorrowed == null) ? 0 : amountBorrowed.hashCode());
+		result = prime * result
+				+ ((amountReceived == null) ? 0 : amountReceived.hashCode());
+		result = prime * result
+				+ ((latePayments == null) ? 0 : latePayments.hashCode());
+		result = prime * result + ((loanID == null) ? 0 : loanID.hashCode());
+		result = prime * result + ((rating == null) ? 0 : rating.hashCode());
+		result = prime * result
+				+ ((startDate == null) ? 0 : startDate.hashCode());
+		result = prime * result + ((term == null) ? 0 : term.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		LoanRecord other = (LoanRecord) obj;
+		if (amountBorrowed == null) {
+			if (other.amountBorrowed != null)
+				return false;
+		} else if (!amountBorrowed.equals(other.amountBorrowed))
+			return false;
+		if (amountReceived == null) {
+			if (other.amountReceived != null)
+				return false;
+		} else if (!amountReceived.equals(other.amountReceived))
+			return false;
+		if (latePayments == null) {
+			if (other.latePayments != null)
+				return false;
+		} else if (!latePayments.equals(other.latePayments))
+			return false;
+		if (loanID == null) {
+			if (other.loanID != null)
+				return false;
+		} else if (!loanID.equals(other.loanID))
+			return false;
+		if (rating == null) {
+			if (other.rating != null)
+				return false;
+		} else if (!rating.equals(other.rating))
+			return false;
+		if (startDate == null) {
+			if (other.startDate != null)
+				return false;
+		} else if (!startDate.equals(other.startDate))
+			return false;
+		if (term == null) {
+			if (other.term != null)
+				return false;
+		} else if (!term.equals(other.term))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return loanID.toString() + ", " + rating.toString() + ", " + startDate + ", " + term.toString() + ", " + amountBorrowed + ", " + amountReceived + ", " + latePayments.toString();
+	}
+	
+}

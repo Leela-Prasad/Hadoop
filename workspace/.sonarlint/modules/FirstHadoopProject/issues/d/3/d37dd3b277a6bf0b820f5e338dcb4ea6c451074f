@@ -1,0 +1,9 @@
+
+csquid:S1172"*Remove this unused method parameter "key".(¨š—°þÿÿÿÿ8”ã•ö¬-HŠRMAJORZ
+CODE_SMELL
+„squid:CommentedOutCodeLine"<This block of commented-out lines of code should be removed.(’í¨ýÿÿÿÿ8ÂŒ¬ö¬-H‹RMAJORZ
+CODE_SMELL
+usquid:S1126&"AReplace this if-then-else statement by a single return statement.(ÚÈ¨ÿ8ÂŒ¬ö¬-HŒRMINORZ
+CODE_SMELL
+Gsquid:S1220""Move this file to a named package.HRMINORZ
+CODE_SMELL

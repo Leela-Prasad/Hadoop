@@ -1,0 +1,143 @@
+package dataTypes;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import org.apache.hadoop.io.Writable;
+
+public class LoanRecord implements Writable {
+
+	private Integer loanId;
+	private Integer rating;
+	private Date startDate;
+	private Integer term;
+	private BigDecimal amountBorrowed;
+	private BigDecimal amountReceived = new BigDecimal(0);
+	private Integer latePayments = 0;
+	
+	public void receivePayment(BigDecimal amount, Boolean late) {
+		if(late)
+			++latePayments;
+		amountReceived.add(amount);
+	}
+	
+	public Boolean finishesInFuture(Date compareDate) {
+		GregorianCalendar gcActual = new GregorianCalendar();
+		gcActual.setTime(startDate);
+		gcActual.add(Calendar.MONTH, term);
+		
+		GregorianCalendar gcCompare = new GregorianCalendar();
+		gcCompare.setTime(compareDate);
+		
+		return (gcActual.compareTo(gcCompare)<0);
+		
+	}
+	
+	public int finalStatus() {
+		if(amountBorrowed.longValue()>amountReceived.longValue()) {
+			return 4;
+		}else if(latePayments>3) {
+			return 3;
+		}else {
+			return latePayments;
+		}
+	}
+	
+	/*public boolean finishesInFuture(Date compareDate) {
+		GregorianCalendar gcActual = new GregorianCalendar();
+		GregorianCalendar gcCompare = new GregorianCalendar();
+		gcActual.setTime(startDate);
+		gcActual.add(GregorianCalendar.MONTH, term);
+		gcCompare.setTime(compareDate);
+		
+		return (DateUtils.truncatedCompareTo(gcActual, gcCompare, Calendar.DAY_OF_MONTH) > 0);
+			
+	}*/
+	
+	public LoanRecord() {
+		super();
+	}
+	
+	public LoanRecord(Integer loanId, Integer rating, Date startDate, Integer term, BigDecimal amountBorrowed, BigDecimal amountReceived,
+			Integer latePayments) {
+		super();
+		this.loanId = loanId;
+		this.rating = rating;
+		this.startDate = startDate;
+		this.term = term;
+		this.amountBorrowed = amountBorrowed;
+		this.amountReceived = amountReceived;
+		this.latePayments = latePayments;
+	}
+	
+	public Integer getLoanId() {
+		return loanId;
+	}
+	public void setLoanId(Integer loanId) {
+		this.loanId = loanId;
+	}
+	public Integer getRating() {
+		return rating;
+	}
+	public void setRating(Integer rating) {
+		this.rating = rating;
+	}
+	public Date getStartDate() {
+		return startDate;
+	}
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+	public Integer getTerm() {
+		return term;
+	}
+	public void setTerm(Integer term) {
+		this.term = term;
+	}
+	public BigDecimal getAmountBorrowed() {
+		return amountBorrowed;
+	}
+	public void setAmountBorrowed(BigDecimal amountBorrowed) {
+		this.amountBorrowed = amountBorrowed;
+	}
+
+	public BigDecimal getAmountReceived() {
+		return amountReceived;
+	}
+	public void setAmountReceived(BigDecimal amountReceived) {
+		this.amountReceived = amountReceived;
+	}
+	public Integer getLatePayments() {
+		return latePayments;
+	}
+	public void setLatePayments(Integer latePayments) {
+		this.latePayments = latePayments;
+	}
+
+	@Override
+	public void readFields(DataInput arg0) throws IOException {
+		this.loanId = arg0.readInt();
+		this.rating = arg0.readInt();
+		this.startDate = new Date(arg0.readLong());
+		this.term = arg0.readInt();
+		this.amountBorrowed = new BigDecimal(arg0.readUTF());
+		this.amountReceived = new BigDecimal(arg0.readUTF());
+		this.latePayments = arg0.readInt();
+	}
+	@Override
+	public void write(DataOutput arg0) throws IOException {
+		arg0.writeInt(loanId);
+		arg0.writeInt(rating);
+		arg0.writeLong(startDate.getTime());
+		arg0.writeInt(term);
+		arg0.writeUTF(amountBorrowed.toString());
+		arg0.writeUTF(amountReceived.toString());
+		arg0.writeInt(latePayments);
+	}
+	
+}

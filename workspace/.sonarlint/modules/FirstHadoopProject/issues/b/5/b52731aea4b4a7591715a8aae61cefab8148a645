@@ -1,0 +1,23 @@
+
+\squid:S1172"*Remove this unused method parameter "key".(¨š—°şÿÿÿÿHÜRMAJORZ
+CODE_SMELL
+l
+squid:S106["9Replace this use of System.out or System.err by a logger.(ƒäØ²8Š‘Ÿ²­-HİRMAJORZ
+CODE_SMELL
+q
+squid:S106F"9Replace this use of System.out or System.err by a logger.(ÔËü´ıÿÿÿÿ8ß¥²­-HŞRMAJORZ
+CODE_SMELL
+q
+squid:S1060"9Replace this use of System.out or System.err by a logger.(â¾¿Âùÿÿÿÿ8Š‘Ÿ²­-HßRMAJORZ
+CODE_SMELL
+q
+squid:S1068"9Replace this use of System.out or System.err by a logger.(ªÓ¼áşÿÿÿÿ8ÛüŸ²­-HàRMAJORZ
+CODE_SMELL
+Gsquid:S1220""Move this file to a named package.HáRMINORZ
+CODE_SMELL
+q
+squid:S1065"9Replace this use of System.out or System.err by a logger.(±Æğ…úÿÿÿÿ8ß¥²­-HâRMAJORZ
+CODE_SMELL
+j
+squid:S106"9Replace this use of System.out or System.err by a logger.(÷¶ª†ıÿÿÿÿHãRMAJORZ
+CODE_SMELL

@@ -1,0 +1,161 @@
+package supportingJobs;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Reducer.Context;
+import org.apache.hadoop.mapreduce.lib.chain.ChainMapper;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+import dataTypes.LoanRecord;
+import joinObjects.LoanIDAndTagKey;
+
+public class Job1_JoinAllData {
+
+	public static class PreProcessRating extends Mapper<LoanIDAndTagKey, Text,LoanIDAndTagKey, Text> {
+		
+		private Text five = new Text("5");
+		public void map (LoanIDAndTagKey key, Text value, Context context) throws IOException, InterruptedException {
+			if(key.getTag()==1 && value.toString().equals("x")) {
+				context.write(key, five);
+			}
+			else {
+				context.write(key, value);
+			}
+		}
+		
+	}
+	
+	public static class MapClass extends Mapper<Text, Text,LoanIDAndTagKey, Text> {
+		
+		public void map (Text key, Text value, Context context) throws IOException, InterruptedException {
+			FileSplit fileSplit = (FileSplit)context.getInputSplit();
+			String fileName = fileSplit.getPath().getName();
+			
+			Integer tag = Integer.valueOf(context.getConfiguration().get(fileName));
+			
+			context.write(new LoanIDAndTagKey(Integer.valueOf(key.toString()),tag), value);
+		}
+	}
+	
+	public static class Reduce extends Reducer<LoanIDAndTagKey, Text, IntWritable, LoanRecord> {
+
+		public enum RemovedLoans {
+			FINISHES_IN_FUTURE
+		}
+		
+		private boolean isPaymentLate(GregorianCalendar dueDate, GregorianCalendar receivedDate) {
+			return (receivedDate.compareTo(dueDate) > 0);
+		}
+		
+		/*private boolean isPaymentLate(GregorianCalendar dueDate, GregorianCalendar receivedDate) {
+			return (DateUtils.truncatedCompareTo(receivedDate, dueDate, Calendar.DAY_OF_MONTH) > 0);
+		}*/
+		
+		
+		private GregorianCalendar gcStartDate = new GregorianCalendar();
+		private GregorianCalendar gcDueDate = new GregorianCalendar();
+		private GregorianCalendar gcReceivedDate = new GregorianCalendar();
+		
+		public void reduce(LoanIDAndTagKey key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+			Iterator<Text> it = values.iterator();
+			
+			LoanRecord loanRecord = new LoanRecord();
+			loanRecord.setLoanId(key.getLoanId());
+			
+			//first item is rating
+			loanRecord.setRating(Integer.valueOf(it.next().toString()));
+			
+			//second item is loanData
+			//format is startDate,term,amountBorrowed
+			String[] loanData = it.next().toString().split(",");
+			String[] startDateFields = loanData[0].split("-");
+			gcStartDate.set(Integer.parseInt(startDateFields[0]), Integer.parseInt(startDateFields[1]), Integer.parseInt(startDateFields[2]));
+			loanRecord.setStartDate(gcStartDate.getTime());
+			loanRecord.setTerm(Integer.parseInt(loanData[1]));
+			loanRecord.setAmountBorrowed(new BigDecimal(loanData[2]));
+			
+			if(loanRecord.finishesInFuture(new GregorianCalendar(2014,07,01).getTime())) {
+				context.getCounter(RemovedLoans.FINISHES_IN_FUTURE).increment(1);
+			}else {
+				//remaining items are payments
+				//format is payNo, dueDate,dueAmount,receivedDate,receivedAmount - note we can ignore amount Due and pay No
+				while(it.hasNext()) {
+					String[] paymentData = it.next().toString().split(",");
+					String[] dueDateFields = paymentData[1].split("-");
+					gcDueDate.set(Integer.parseInt(dueDateFields[0]), Integer.parseInt(dueDateFields[1]), Integer.parseInt(dueDateFields[2]));
+					String[] recievedDateFields = paymentData[3].split("-");
+					gcReceivedDate.set(Integer.parseInt(recievedDateFields[0]), Integer.parseInt(recievedDateFields[1]), Integer.parseInt(recievedDateFields[2]));
+					BigDecimal recievedAmount = new BigDecimal(paymentData[4]);
+					loanRecord.receivePayment(recievedAmount, isPaymentLate(gcDueDate, gcReceivedDate));
+				}
+			}
+			
+			context.write(new IntWritable(loanRecord.getLoanId()), loanRecord);
+		}
+	}
+	
+	public static void deletePreviousOutput(Configuration conf, Path path) {
+		try {
+			FileSystem hdfs = FileSystem.get(conf);
+			hdfs.delete(path, true);
+		} catch (IOException e) {}
+	}
+	
+	public static void main(String[] args) throws Exception {
+		Path in1 = new Path(args[0]); // ratings file
+		Path in2 = new Path(args[1]); // loan data file
+		Path in3 = new Path(args[2]); // payments file
+		Path out = new Path(args[3]);
+        
+        Configuration conf = new Configuration();
+        conf.set("mapreduce.input.keyvaluelinerecordreader.key.value.separator", ",");
+        
+        deletePreviousOutput(conf, out);
+        
+        conf.set(in1.getName(), "1");
+        conf.set(in2.getName(), "2");
+        conf.set(in3.getName(), "3");
+        
+		generateAndConfigureJob(out, conf);
+		
+	}
+
+	private static void generateAndConfigureJob(Path out, Configuration conf) throws IOException, InterruptedException, ClassNotFoundException {
+		
+		Job job = Job.getInstance(conf);		
+		
+		job.setOutputKeyClass(LoanIDAndTagKey.class);
+		job.setOutputValueClass(Text.class);
+		
+		ChainMapper.addMapper(job, MapClass.class, Text.class, Text.class, LoanIDAndTagKey.class, Text.class, conf);
+		job.setMapperClass(MapClass.class);
+		job.setReducerClass(Reduce.class);
+		
+		job.setInputFormatClass(KeyValueTextInputFormat.class); 
+		job.setOutputFormatClass(TextOutputFormat.class);
+		
+		FileInputFormat.setInputPaths(job, in);
+		FileOutputFormat.setOutputPath(job, out);
+		
+		// job.setJarByClass(.class);
+		job.submit();
+	}
+	
+	
+}

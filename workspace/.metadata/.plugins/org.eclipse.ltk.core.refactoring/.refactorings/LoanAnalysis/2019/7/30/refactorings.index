@@ -1,0 +1,6 @@
+1564244834754	Extract method 'generateAndConfigureJob'
+1564245120938	Delete element
+1564245134370	Rename package 'supportingjobs'
+1564245241473	Rename type 'LoadIDAndTagKey'
+1564245478011	Rename field 'LoanId'
+1564246086465	Rename package 'dataTypes'

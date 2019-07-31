@@ -1,0 +1,100 @@
+package dataTypes;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
+import org.apache.hadoop.io.Writable;
+
+public class MetricsOutput implements Writable {
+
+	private Integer rating;
+	private Double full;
+	private Double late1;
+	private Double late2;
+	private Double late3;
+	private Double notrepaid;
+	
+	@Override
+	public void readFields(DataInput arg0) throws IOException {
+		this.rating = arg0.readInt();
+		this.full = arg0.readDouble();
+		this.late1 = arg0.readDouble();
+		this.late2 = arg0.readDouble();
+		this.late3 = arg0.readDouble();
+		this.notrepaid = arg0.readDouble();
+	}
+	
+	@Override
+	public void write(DataOutput arg0) throws IOException {
+		arg0.writeInt(rating);
+		arg0.writeDouble(full);
+		arg0.writeDouble(late1);
+		arg0.writeDouble(late2);
+		arg0.writeDouble(late3);
+		arg0.writeDouble(notrepaid);
+	}
+
+	public MetricsOutput() {
+		super();
+	}
+
+	public MetricsOutput(Integer rating, Double full, Double late1, Double late2, Double late3, Double notrepaid) {
+		super();
+		this.rating = rating;
+		this.full = full;
+		this.late1 = late1;
+		this.late2 = late2;
+		this.late3 = late3;
+		this.notrepaid = notrepaid;
+	}
+
+	public Integer getRating() {
+		return rating;
+	}
+
+	public void setRating(Integer rating) {
+		this.rating = rating;
+	}
+
+	public Double getFull() {
+		return full;
+	}
+
+	public void setFull(Double full) {
+		this.full = full;
+	}
+
+	public Double getLate1() {
+		return late1;
+	}
+
+	public void setLate1(Double late1) {
+		this.late1 = late1;
+	}
+
+	public Double getLate2() {
+		return late2;
+	}
+
+	public void setLate2(Double late2) {
+		this.late2 = late2;
+	}
+
+	public Double getLate3() {
+		return late3;
+	}
+
+	public void setLate3(Double late3) {
+		this.late3 = late3;
+	}
+
+	public Double getNotrepaid() {
+		return notrepaid;
+	}
+
+	public void setNotrepaid(Double notrepaid) {
+		this.notrepaid = notrepaid;
+	}
+	
+}

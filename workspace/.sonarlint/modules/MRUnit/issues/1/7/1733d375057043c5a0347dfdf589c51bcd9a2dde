@@ -1,0 +1,9 @@
+
+Gsquid:S1220""Move this file to a named package.HΊRMINORZ
+CODE_SMELL
+†squid:S1192#"JDefine a constant instead of duplicating this literal "chemistry" 6 times.(™Κϊÿÿÿÿ8σ¦Ό΄-HΟRCRITICALZ
+CODE_SMELL
+ysquid:S00112"FDefine and throw a dedicated exception instead of using a generic one.(‚λτ΅ώÿÿÿÿH»RMAJORZ
+CODE_SMELL
+Ώ%squid:RedundantThrowsDeclarationCheck"lRemove the declaration of thrown exception 'java.lang.Exception', as it cannot be thrown from method's body.(‚λτ΅ώÿÿÿÿ8θ€Ό΄-HΓRMINORZ
+CODE_SMELL

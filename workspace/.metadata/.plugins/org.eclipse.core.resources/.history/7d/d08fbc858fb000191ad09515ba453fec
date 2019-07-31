@@ -1,0 +1,46 @@
+package dataTypes;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+public class LoanRecord {
+
+	private Integer loanId;
+	private Integer rating;
+	private Date startDate;
+	private Integer term;
+	private BigDecimal amountReceived = new BigDecimal(0);
+	private Integer latePayments = 0;
+	
+	public Integer getLoanId() {
+		return loanId;
+	}
+	public void setLoanId(Integer loanId) {
+		this.loanId = loanId;
+	}
+	public Integer getRating() {
+		return rating;
+	}
+	public void setRating(Integer rating) {
+		this.rating = rating;
+	}
+	public Date getStartDate() {
+		return startDate;
+	}
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+	public Integer getTerm() {
+		return term;
+	}
+	public void setTerm(Integer term) {
+		this.term = term;
+	}
+	public BigDecimal getAmountReceived() {
+		return amountReceived;
+	}
+	public void setAmountReceived(BigDecimal amountReceived) {
+		this.amountReceived = amountReceived;
+	}
+	
+}

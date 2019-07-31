@@ -1,0 +1,105 @@
+package dataTypes;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapreduce.lib.db.DBWritable;
+
+public class MetricsRecord implements DBWritable {
+
+	private Integer rating;
+	private Double full;
+	private Double late1;
+	private Double late2;
+	private Double late3;
+	private Double notrepaid;
+	
+
+	public MetricsRecord() {
+		super();
+	}
+
+	public MetricsRecord(Integer rating, Double full, Double late1, Double late2, Double late3, Double notrepaid) {
+		super();
+		this.rating = rating;
+		this.full = full;
+		this.late1 = late1;
+		this.late2 = late2;
+		this.late3 = late3;
+		this.notrepaid = notrepaid;
+	}
+
+	public Integer getRating() {
+		return rating;
+	}
+
+	public void setRating(Integer rating) {
+		this.rating = rating;
+	}
+
+	public Double getFull() {
+		return full;
+	}
+
+	public void setFull(Double full) {
+		this.full = full;
+	}
+
+	public Double getLate1() {
+		return late1;
+	}
+
+	public void setLate1(Double late1) {
+		this.late1 = late1;
+	}
+
+	public Double getLate2() {
+		return late2;
+	}
+
+	public void setLate2(Double late2) {
+		this.late2 = late2;
+	}
+
+	public Double getLate3() {
+		return late3;
+	}
+
+	public void setLate3(Double late3) {
+		this.late3 = late3;
+	}
+
+	public Double getNotrepaid() {
+		return notrepaid;
+	}
+
+	public void setNotrepaid(Double notrepaid) {
+		this.notrepaid = notrepaid;
+	}
+
+	@Override
+	public void readFields(ResultSet arg0) throws SQLException {
+		this.rating = arg0.getInt(1);
+		this.full = arg0.getDouble(2);
+		this.late1 = arg0.getDouble(3);
+		this.late2 = arg0.getDouble(4);
+		this.late3 = arg0.getDouble(5);
+		this.notrepaid = arg0.getDouble(6);
+	}
+
+	@Override
+	public void write(PreparedStatement arg0) throws SQLException {
+		arg0.setInt(1, rating);
+		arg0.setDouble(2, full);
+		arg0.setDouble(3, late1);
+		arg0.setDouble(4, late2);
+		arg0.setDouble(5, late3);
+		arg0.setDouble(6,  notrepaid);
+	}
+	
+}

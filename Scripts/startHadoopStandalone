@@ -1,0 +1,3 @@
+#!/bin/sh
+rm /opt/hadoop-2.4.0/etc/hadoop
+ln -s /opt/hadoop-2.4.0/etc/hadoop.standalone /opt/hadoop-2.4.0/etc/hadoop

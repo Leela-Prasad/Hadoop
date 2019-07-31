@@ -1,0 +1,9 @@
+
+Gsquid:S1220""Move this file to a named package.H–
+RMINORZ
+CODE_SMELL
+Wsquid:S1172"*Remove this unused method parameter "key".(Àóé¾H—
+RMAJORZ
+CODE_SMELL
+Žsquid:S20681"U'password' detected in this expression, review this potentially hardcoded credential.(þêÇè8øÛà Ã-H 
+RBLOCKERZVULNERABILITY

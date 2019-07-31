@@ -1,0 +1,36 @@
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+public class Main {
+
+	public static void main(String[] args) {
+		/*GregorianCalendar cal = new GregorianCalendar(2018, 4, 30);
+		cal.add(Calendar.DATE, 3);
+		System.out.println(cal.getTime());
+		GregorianCalendar cal2 = new GregorianCalendar(2018, 5, 1);
+		System.out.println(cal2.getTime());
+		
+		System.out.println(cal.compareTo(cal2));*/
+		
+		System.out.println(finishesInFuture(new GregorianCalendar(2011,1,1).getTime(),new GregorianCalendar(2011,3,1).getTime(),6));
+	}
+
+	
+	/*public void testFinishesInFuture() {
+		LoanRecord lr = new LoanRecord(1, 1, new GregorianCalendar(2011,1,1).getTime(), 6, 1000, new BigDecimal(1000), 1);
+		assertEquals(true, lr.finishesInFuture(new GregorianCalendar(2011,3,1).getTime()));
+		assertEquals(false, lr.finishesInFuture(new GregorianCalendar(2011,8,1).getTime()));
+	}*/
+	
+	public static Boolean finishesInFuture(Date startDate, Date compareDate,Integer term) {
+		GregorianCalendar gcActual = new GregorianCalendar();
+		gcActual.setTime(startDate);
+		gcActual.add(Calendar.MONTH, term);
+		
+		GregorianCalendar gcCompare = new GregorianCalendar();
+		gcCompare.setTime(compareDate);
+		
+		return (gcActual.compareTo(gcCompare)<0);
+	}
+}

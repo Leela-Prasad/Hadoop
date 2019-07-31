@@ -1,0 +1,23 @@
+
+Gsquid:S1220""Move this file to a named package.HÁRMINORZ
+CODE_SMELL
+k
+squid:S1063"9Replace this use of System.out or System.err by a logger.(ýÂÄ98ð»ôŸµ-HÇRMAJORZ
+CODE_SMELL
+squid:CommentedOutCodeLineR"<This block of commented-out lines of code should be removed.(Þ¾¦Ë8ÄÔŸ µ-HËRMAJORZ
+CODE_SMELL
+e
+squid:S106E"9Replace this use of System.out or System.err by a logger.(ƒäØ²HÀRMAJORZ
+CODE_SMELL
+„squid:CommentedOutCodeLine"<This block of commented-out lines of code should be removed.(È­èþÿÿÿÿ8‰Þˆ µ-HÊRMAJORZ
+CODE_SMELL
+„squid:CommentedOutCodeLine."<This block of commented-out lines of code should be removed.(ßÕïüÿÿÿÿ8ð»ôŸµ-HÅRMAJORZ
+CODE_SMELL
+Ê%squid:RedundantThrowsDeclarationCheck,"wRemove the declaration of thrown exception 'java.lang.InterruptedException', as it cannot be thrown from method's body.(ÌûþÓûÿÿÿÿ8ð»ôŸµ-HÄRMINORZ
+CODE_SMELL
+¿%squid:RedundantThrowsDeclarationCheck,"lRemove the declaration of thrown exception 'java.io.IOException', as it cannot be thrown from method's body.(ÌûþÓûÿÿÿÿ8ð»ôŸµ-HÃRMINORZ
+CODE_SMELL
+\squid:S1172"*Remove this unused method parameter "key".(¨š—°þÿÿÿÿHÂRMAJORZ
+CODE_SMELL
+gsquid:S1172,".Remove this unused method parameter "context".(ÌûþÓûÿÿÿÿ8ð»ôŸµ-HÈRMAJORZ
+CODE_SMELL

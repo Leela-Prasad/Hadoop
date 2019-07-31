@@ -1,0 +1,15 @@
+package dataTypes;
+
+import org.apache.hadoop.io.Writable;
+
+public class MetricsOutput implements Writable {
+
+	private Integer rating;
+	private Double full;
+	private Double late1;
+	private Double late2;
+	private Double late3;
+	private Double notrepaid;
+	
+	
+}

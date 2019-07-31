@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy element &apos;CommonPhrases.java&apos; to &apos;MRUnit/src/(default package)&apos;&#x0A;- Original project: &apos;LoggingAndCounters&apos;&#x0A;- Destination element: &apos;MRUnit/src/(default package)&apos;&#x0A;- Original element: &apos;CommonPhrases.java&apos;" description="Copy compilation unit" destination="=MRUnit/src&lt;" element1="/src&lt;{CommonPhrases.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1560272118547" units="1" version="1.0"/>
+</session>

@@ -1,0 +1,8 @@
+
+l
+squid:S106L"9Replace this use of System.out or System.err by a logger.(É‰ÿ≤8¿ºô¿±-HùRMAJORZ
+CODE_SMELL
+^squid:S1172"*Remove this unused method parameter "key".(¿ÛÈæ8ß€±¿±-HúRMAJORZ
+CODE_SMELL
+Gsquid:S1220""Move this file to a named package.HõRMINORZ
+CODE_SMELL

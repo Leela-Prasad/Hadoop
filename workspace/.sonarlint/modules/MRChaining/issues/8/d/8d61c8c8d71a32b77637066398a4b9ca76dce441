@@ -1,0 +1,9 @@
+
+Wsquid:S1172"*Remove this unused method parameter "key".(Àóé¾HöRMAJORZ
+CODE_SMELL
+esquid:S3518*"7Make sure "n" can't be zero before doing this division.(ëó”„øÿÿÿÿH÷RCRITICALZBUG
+e
+squid:S106:"9Replace this use of System.out or System.err by a logger.(ƒäØ²HøRMAJORZ
+CODE_SMELL
+Gsquid:S1220""Move this file to a named package.HùRMINORZ
+CODE_SMELL

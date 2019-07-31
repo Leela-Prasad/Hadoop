@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename compilation unit &apos;QuestionsWith0Response.java&apos; to &apos;QuestionsWith0Responses.java&apos;&#x0A;- Original project: &apos;StackExchange&apos;&#x0A;- Original element: &apos;QuestionsWith0Response.java&apos;&#x0A;- Renamed element: &apos;QuestionsWith0Responses.java&apos;" description="Rename compilation unit &apos;QuestionsWith0Response.java&apos;" flags="2" id="org.eclipse.jdt.ui.rename.compilationunit" input="/src&lt;{QuestionsWith0Response.java" name="QuestionsWith0Responses.java" references="false" stamp="1558697800579" version="1.0"/>
+</session>

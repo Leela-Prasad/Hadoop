@@ -1,0 +1,9 @@
+./stopHadoop
+sudo rm -rf /var/hadoop
+sudo mkdir /var/hadoop
+sudo chown Leela:staff /var/hadoop
+hdfs namenode -format
+./startHadoopPseudo
+hdfs dfs -mkdir /user
+hdfs dfs -mkdir /user/Leela
+

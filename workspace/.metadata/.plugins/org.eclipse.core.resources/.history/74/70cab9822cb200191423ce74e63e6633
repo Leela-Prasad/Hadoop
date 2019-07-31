@@ -1,0 +1,179 @@
+package supportingJobs;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+
+import joinObjects.LoanIDComparator;
+import joinObjects.LoanIDPartitioner;
+import joinObjects.LoanIDandTagKey;
+
+import org.apache.commons.lang.time.DateUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.chain.ChainMapper;
+import org.apache.hadoop.mapreduce.lib.chain.ChainReducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+import dataTypes.LoanRecord;
+
+
+public class Job1_JoinAllData {
+
+	public static class PreProcessRating extends Mapper<LoanIDandTagKey,Text,LoanIDandTagKey,Text> {
+
+		private Text five = new Text("5");
+
+		public void map(LoanIDandTagKey key, Text value, Context context) throws IOException, InterruptedException {
+			if (key.getTag() == 1 && value.toString().equals("x")) {
+				context.write(key,five);
+			}
+			else {
+				context.write(key,value);
+			}
+		}
+	}
+
+	public static class MapClass extends Mapper<Text,Text,LoanIDandTagKey,Text> {
+
+		public void map(Text key, Text value, Context context) throws IOException, InterruptedException {
+			//find out the file name
+			FileSplit fileSplit = (FileSplit)context.getInputSplit();
+			String fileName = fileSplit.getPath().getName();
+
+			int tag = Integer.valueOf(context.getConfiguration().get(fileName));
+
+			LoanIDandTagKey newKey = new LoanIDandTagKey(Integer.valueOf(key.toString()), tag);
+			context.write(newKey,value);
+		}
+	}
+
+
+
+	
+	public static class Reduce extends Reducer<LoanIDandTagKey, Text, IntWritable, LoanRecord> {
+
+		public enum RemovedLoans {
+			FINISHES_IN_FUTURE
+		}
+		
+		private boolean isPaymentLate(GregorianCalendar dueDate, GregorianCalendar receivedDate) {
+
+			return (DateUtils.truncatedCompareTo(receivedDate, dueDate, Calendar.DAY_OF_MONTH) > 0);
+
+		}
+
+		private GregorianCalendar gcStartDate = new GregorianCalendar();
+		private GregorianCalendar gcDueDate = new GregorianCalendar();
+		private GregorianCalendar gcReceivedDate = new GregorianCalendar();
+		
+		public void reduce(LoanIDandTagKey key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+			Iterator<Text> it = values.iterator();
+			LoanRecord loanRecord = new LoanRecord();
+			loanRecord.setLoanID(key.getLoanID());
+			
+			//first item is rating
+			loanRecord.setRating(Integer.valueOf(it.next().toString()));
+
+			//second item is loanData
+			//format is startDate,term,amountBorrowed		
+			String[] loanData = it.next().toString().split(",");
+			String[] dateFields = loanData[0].split("-");
+			gcStartDate.set(Integer.valueOf(dateFields[0]),Integer.valueOf(dateFields[1]),Integer.valueOf(dateFields[2]));
+			loanRecord.setStartDate(gcStartDate.getTime());
+			loanRecord.setTerm(Integer.valueOf(loanData[1]));
+			loanRecord.setAmountBorrowed(Integer.valueOf(loanData[2]));
+
+			if (loanRecord.finishesInFuture(new GregorianCalendar(2014,07,01).getTime())) {
+				context.getCounter(RemovedLoans.FINISHES_IN_FUTURE).increment(1);
+			}
+			else {
+
+				//remaining items are payments
+				//format is payNo, dueDate,dueAmount,receivedDate,receivedAmount - note we can ignore amount Due and pay No
+				while (it.hasNext()) {
+					String[] paymentData = it.next().toString().split(",");
+					String[] dueDateFields = paymentData[1].split("-");
+					gcDueDate.set(Integer.valueOf(dueDateFields[0]),Integer.valueOf(dueDateFields[1]),Integer.valueOf(dueDateFields[2]));
+					String[] receivedDateFields = paymentData[3].split("-");
+					gcReceivedDate.set(Integer.valueOf(receivedDateFields[0]),Integer.valueOf(receivedDateFields[1]),Integer.valueOf(receivedDateFields[2]));
+					BigDecimal receivedAmount = new BigDecimal(paymentData[4]);
+					loanRecord.receivePayment(receivedAmount, isPaymentLate(gcDueDate, gcReceivedDate));
+				}
+				context.write(new IntWritable(loanRecord.getLoanID()), loanRecord);
+			}
+		}
+	}
+
+	public static void deletePreviousOuptut(Configuration conf, Path path) {
+		try {
+			FileSystem hdfs = FileSystem.get(conf);
+			hdfs.delete(path, true);
+		}
+		catch (IOException e) {
+			//ignore
+		}
+	}
+
+	public static Job generateAndConfigureJob(Configuration conf, Path in1, Path in2, Path in3, Path out) throws IOException {
+		Job job = Job.getInstance(conf);
+
+		job.setMapOutputKeyClass(LoanIDandTagKey.class);
+		job.setMapOutputValueClass(Text.class);
+
+		job.setOutputKeyClass(IntWritable.class);
+		job.setOutputValueClass(LoanRecord.class);
+
+		ChainMapper.addMapper(job, MapClass.class, Text.class, Text.class, LoanIDandTagKey.class, Text.class, conf);
+		ChainMapper.addMapper(job, PreProcessRating.class, LoanIDandTagKey.class, Text.class, LoanIDandTagKey.class, Text.class, conf);
+		ChainReducer.setReducer(job,Reduce.class,LoanIDandTagKey.class,Text.class,IntWritable.class,LoanRecord.class,conf);
+
+		job.setPartitionerClass(LoanIDPartitioner.class);
+		job.setGroupingComparatorClass(LoanIDComparator.class);
+
+		job.setInputFormatClass(KeyValueTextInputFormat.class);
+		job.setOutputFormatClass(SequenceFileOutputFormat.class);
+
+		FileInputFormat.addInputPath(job, in1);
+		FileInputFormat.addInputPath(job, in2);
+		FileInputFormat.addInputPath(job, in3);
+		FileOutputFormat.setOutputPath(job,out);
+
+		job.setJarByClass(Job1_JoinAllData.class);
+		
+		return job;
+	}
+	
+	public static void main(String[] args) throws Exception {
+		Path in1 = new Path(args[0]); //ratings file
+		Path in2 = new Path(args[1]); //loan data file
+		Path in3 = new Path(args[2]); //payments file
+		Path out = new Path(args[3]);
+
+		Configuration conf = new Configuration();
+		conf.set("mapreduce.input.keyvaluelinerecordreader.key.value.separator",",");
+
+		deletePreviousOuptut(conf, out);
+
+		conf.set(in1.getName(),"1");
+		conf.set(in2.getName(),"2");
+		conf.set(in3.getName(),"3");
+
+		Job job = generateAndConfigureJob(conf,in1,in2,in3,out);
+		
+		job.submit();
+	}
+}

@@ -1,0 +1,15 @@
+import java.math.BigDecimal;
+import java.sql.Date;
+
+import org.apache.hadoop.mapreduce.lib.db.DBWritable;
+
+public class SalesRecord implements DBWritable {
+
+	private int id;
+	private String region;
+	private Date date;
+	private int quantity;
+	private BigDecimal price;
+	
+	
+}

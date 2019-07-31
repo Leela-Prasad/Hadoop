@@ -1,0 +1,12 @@
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
+public class Main {
+
+	public static void main(String[] args) {
+		GregorianCalendar cal = new GregorianCalendar(2018, 4, 30);
+		cal.add(Calendar.DATE, 1);
+		System.out.println(cal.getTime());
+	}
+
+}

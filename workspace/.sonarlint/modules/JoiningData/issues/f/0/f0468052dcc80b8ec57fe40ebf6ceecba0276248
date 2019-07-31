@@ -1,0 +1,7 @@
+
+Wsquid:S1172%"*Remove this unused method parameter "key".(œ¹ˆ´HìRMAJORZ
+CODE_SMELL
+ksquid:S2130"9Use "Integer.parseInt" for this string-to-int conversion.(†ÎùùÿÿÿÿHíRMINORZ
+CODE_SMELL
+Gsquid:S1220""Move this file to a named package.HîRMINORZ
+CODE_SMELL

@@ -1,0 +1,12 @@
+
+Gsquid:S1220""Move this file to a named package.H	RMINORZ
+CODE_SMELL
+csquid:S1172"*Remove this unused method parameter "key".(¨š—°şÿÿÿÿ8Á„¨³­-H	RMAJORZ
+CODE_SMELL
+l
+squid:S106*"9Replace this use of System.out or System.err by a logger.(ƒÙ«˜8Á„¨³­-H	RMAJORZ
+CODE_SMELL
+lsquid:S3518A"7Make sure "n" can't be zero before doing this division.(ëó”„øÿÿÿÿ8°Éİ³­-H	RCRITICALZBUG
+l
+squid:S106Q"9Replace this use of System.out or System.err by a logger.(ë¤ÇÚ8Òğõ³­-H‘	RMAJORZ
+CODE_SMELL
