@@ -1,1 +1,802 @@
-# Hadoop
+Hadoop is a platform that allows us to distribute a processing task over multiple computers.
+If we have a particular piece of code that needs run on a very large data set then we can have multiple computers that are doing the part of the work at the same time.
+
+Hadoop manifests the process of distributing both data and processing task out to each of these computers and bringing the results back together.
+
+There is a case that one of the node might fail that is doing a small part of the task then hadoop can recover and reassign that node work to another node without whole job/task to be started again from beginning.
+
+There are 2 types of nodes 
+1. Controller node - which allocate data and task to slaves and monitor the progress of the processing task that each slave is doing. 
+2. Slave Nodes - these have part of the data to be processed and they do the actual processing work.
+3. Controller Node backup - the backup keeps track of what each slave is doing and if controller fails the backup can be used to recover the state of cluster.
+
+Recovering from the backup does need manual intervention it is not like something that happens automatically when one of the slave node fails.
+
+Splitting the data across multiple nodes and Aggregating results is done is using Map Reduce Programming Model.
+
+Map Reduce is a programming model which allows us to safely split a processing function across multiple computers working in parallel and then combine the results, so that the same final result will be achieved as if the processing took place on a single computer.
+
+Map - main analysis process
+Reduce - combine results of Map process.
+
+Map phase will do the main processing and output its results in the form of map (keys and values)
+A Hadoop map isn’t exactly same as java map the main difference hadoop map can contain multiple entries with the same key.
+Each of slave node produce one map. i.e., if we have 3 slaves then at the end of the map phase we have 3 maps.
+
+Reduce phase will combine all the maps produced into a single map and here the keys in the reduce map are unique.
+
+The main job here in map reduce is how to convert a processing task into map processes(i.e. key values)
+
+In Map process it will take each record/line in the file and process them to form a key value pair.
+** Each row/line in the data must be independent from other row/line, as map reduce will process each row separately.
+
+Uses of Hadoop
+1. To process Large amount of data.
+2. Data is fixed(not changing when the process is running) so it fits for a dataware house  jobs.
+3. It is used for Offline analysis not real time.
+4. But results can be used for real time processing (e.g.: index) means we can schedule a job which will run map reduce job and produce a index from the results so that this index can be used for searching for the next day.
+Google produce index for there search queries.
+
+
+Hadoop Operating Modes:
+1. Standalone
+runs as a standard application
+doesn’t use HDFS
+Errors output to console
+This mode is used to run the map reduce java programs
+
+2. Pseudo distributed 
+In this mode Controller Node, Slave Nodes will be running in one machine
+Uses HDFS
+This mode is used to do Integration testing.
+
+3. Distributed Mode
+This is a production standard mode.
+Uses HDFS
+In this mode we need atleast 4 nodes.
+1 - Controller Node
+1 - Controller Backup Node
+2 - Slave Nodes
+Each node runs Hadoop programs as deamons/services 
+slaves to see whether any jobs are submitted to them
+controller/backup nodes to check the progress of the job on the slave nodes
+
+
+Hadoop Installation:
+
+Download hadoop-2.4.0.tar.gz and extract in opt folder
+sudo -C /opt -zxvf hadoop-2.4.0.tar.gz 
+
+Change the ownership
+cd /opt
+sudo mkdir Leela:staff hadoop-2.4.0
+
+
+Testing Hadoop Installation:
+/opt/hadoop-2.4.0/bin/hadoop jar HadoopTest.jar HadoopTest input.txt output
+
+
+Add below environment variables to ~/.bash_profile
+export HADOOP_PREFIX=/opt/hadoop-2.4.0
+export PATH=$PATH:$HADOOP_PREFIX/bin:$HADOOP_PREFIX/sbin
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_PREFIX/lib/native
+export HADOOP_OPTS="-Djava.library.path=$HADOOP_PREFIX/lib"n
+
+source .bash_profile
+
+Configuration files can be found in $HADOOP_PREFIX/etc/hadoop
+since we want to switch between standalone and pseudo mode we will create 2 folders
+hadoop.standalone
+hadoop.pseudo
+
+Since Hadoop looks for folder $HADOOP_PREFIX/etc/hadoop
+we will have a symbolic link hadoop to point to either to standalone and pseudo based on our requirement.
+
+sudo mv hadoop hadoop.standalone
+sudo mkdir hadoop.pseudo
+sudo cp -R hadoop.standalone/* hadoop.pseudo/
+cd hadoop.pseudo/
+Here the configuration files are different from standalone mode, so we will copy the files which are provided in practical and code folder
+sudo cp -R ~/Desktop/Hadoop/Configuration\ Files\ for\ pseudo\ mode/pseudo-distributed/* .
+
+./startHadoopStandalone
+executing this script will delete the existing link and creates a new symbolic link to standalone configuration files.
+
+
+core-site.xml
+Setting HDFS location.
+
+standalone:
+<configuration>
+</configuration>
+
+Pseudo:
+<configuration>
+ <property>
+   <name>fs.defaultFS</name>
+   <value>hdfs://localhost/</value>
+ </property>
+</configuration>
+
+
+hadoop-policy.xml
+No changes
+
+hdfs-site.xml
+Setting Name node and Data Node locations.
+
+standalone:
+<configuration>
+</configuration>
+
+Pseudo:
+<configuration>
+  <property>
+    <name>dfs.datanode.data.dir</name>
+    <value>file:///var/hadoop/hdfs/datanode</value>
+  </property>
+
+ <property>
+  <name>dfs.namenode.name.dir</name>
+  <value>file:///var/hadoop/hdfs/namenode</value>
+ </property>
+</configuration>
+
+
+mapred-site.xml
+Setting MapReduce Framework name and job tracker port
+standalone:
+No file exists
+
+Pseudo:
+<configuration>
+  <property>
+    <name>mapred.job.tracker</name>
+    <value>localhost:9001</value>
+  </property>
+
+  <property>
+    <name>mapreduce.framework.name</name>
+    <value>yarn</value>
+  </property>
+</configuration>
+
+yarn-site.xml
+
+standalone:
+<configuration>
+</configuration>
+
+Pseudo:
+<configuration>
+
+<property>
+    <name>yarn.scheduler.minimum-allocation-mb</name>
+    <value>128</value>
+    <description>Minimum limit of memory to allocate to each container request at the Resource Manager.</description>
+  </property>
+  <property>
+    <name>yarn.scheduler.maximum-allocation-mb</name>
+    <value>2048</value>
+    <description>Maximum limit of memory to allocate to each container request at the Resource Manager.</description>
+  </property>
+  <property>
+    <name>yarn.scheduler.minimum-allocation-vcores</name>
+    <value>1</value>
+    <description>The minimum allocation for every container request at the RM, in terms of virtual CPU cores. Requests lower than this won't take effect, and the specified value will get allocated the minimum.</description>
+  </property>
+  <property>
+    <name>yarn.scheduler.maximum-allocation-vcores</name>
+    <value>2</value>
+    <description>The maximum allocation for every container request at the RM, in terms of virtual CPU cores. Requests higher than this won't take effect, and will get capped to this value.</description>
+  </property>
+  <property>
+    <name>yarn.nodemanager.resource.memory-mb</name>
+    <value>4096</value>
+    <description>Physical memory, in MB, to be made available to running containers</description>
+  </property>
+  <property>
+    <name>yarn.nodemanager.resource.cpu-vcores</name>
+    <value>4</value>
+    <description>Number of CPU cores that can be allocated for containers.</description>
+  </property>
+
+  <property>
+    <name>yarn.nodemanager.aux-services</name>
+    <value>mapreduce_shuffle</value>
+  </property>
+
+</configuration>
+
+
+
+
+
+** To run hadoop in pseudo distributed mode ssh must be enabled.
+To enable that we need to generate ssh keys without a passphrase
+
+ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+
+In Mac if you are still seeing connection refused then do the following
+Go to System Preferences -> Sharing -> Remote Login needed to be enabled.
+
+./startHadoopPseudo
+This will start name node, data node, secondary name node etc
+so you should be able to see below folder after startup
+/var/hadoop/hdfs/namenode
+/var/hadoop/hdfs/datanode
+
+./stopHadoop
+This will stop name node, data node, secondary name node
+
+
+To switch between pseudo to standalone
+./startHadoopStandalone
+
+Hadoop Data Types	Java Data Types
+Text			String
+LongWritable		Long
+
+
+MapReduce Program:
+In Map Reduce Job we will define 2 static classes for Map Class and Reduce Class, so that we can use same classnames for Map and Reduce Classes.
+Map Class Name - MapClass
+Reduce Class Name - Reduce
+Here we are not using MapClass as Map because it is clash with java.util.Map class
+
+** Map Class will be invoked for every line/record in the input file.
+** Reduce Class will be invoked for every line/record in the shuffle 
+
+//Mapper<MapperKeyType, MapperValueType, ShuffleKeyType, ShuffleValueType>
+public static class MapClass extends Mapper<LongWritable, Text,Text, LongWritable > {
+	//map method will be invoked for every line in the input file.
+	public void map (LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+	}
+}
+
+//Reducer<ShuffleKeyType, ShuffleValueType, ReducerKeyType, ReducerValueType>
+public static class Reduce extends Reducer<Text, LongWritable,Text,LongWritable> {
+	//reduce method will be invoked for evey record in shuffle output.
+	//shuffle combines key with same name into single key as a key and list of values.
+	public void reduce(Text key, Iterable<LongWritable> values, Context context) throws IOException, InterruptedException {
+	}
+}
+
+
+Between Map and reduce there is one more stage called Shuffle this will combine multiple key with same name into one key and a list of values, so the input to reduce will be shuffle output.
+
+Invoke map reduce job from command line
+hadoop jar FileName.jar MainClassName arguments
+
+//Input is a single file
+hadoop jar FirstHadoopProject.jar WordAnalysis first-speech.txt output
+//Input is a directory
+hadoop jar FirstHadoopProject.jar WordAnalysis AsYouLikeIt output
+
+
+** A map reduce job can reuse same map class or reduce class in that case we need refer to that map or reduce class in job.set() method, mostly we will segregate these methods in another class so that jobs can refer them.
+
+Output produced after map reduce will be in below format
+part-r-0000
+part-r-0001
+part-r-0002
+part-r-0003
+part-r-0004
+
+Here r means it is generated after reduce step and 
+0000 means first slave node
+0001 means second slave node
+0002 means third slave node
+0003 means fourth slave node
+0004 means fifth slave node
+
+To see a merge output we have to run below command
+hdfs dfs -getmerge sourcefolder localfolder
+
+hdfs dfs -getmerge sourcefolder localfolder addnl
+Here addnl means it will new line after every part
+
+HDFS(Hadoop Distributed File System):
+Since we need to break down a large file into smaller pieces to store and process them parallely(by running the processing task on multiple slave nodes) we need to have a file system that is HDFS.
+Here data will be stored in blocks of 128 MB as defined in hfs-site.xml
+Hadoop has a replication factor based on which it will replicate the blocks on another nodes, so that if one node fails it will copy the data from other nodes to a new node and process that task instead of restarting entire job.
+
+We need to test our standalone application that is working even when the file is broken into smaller blocks.
+
+In Pseudo distributed mode file will be split into smaller blocks and stores them in a single node and this is portable to distributed system where we have multiple slave nodes.
+
+
+In Hadoop we have hdfs commands which will get the information from different blocks on different nodes and present the data as if the data is present on a single file system.
+
+
+To run hdfs commands we need to shift to Pseudo Distributed mode.
+./startHadoopPseudo
+
+hdfs dfs -put first-speech.txt
+
+hdfs dfs -put AsYouLikeIt/
+
+Below command will list down all directories and files in hdfs from Root
+-R means Recursive
+/ - from root
+hdfs dfs -ls -R /
+
+
+hdfs dfs -get first-speech.txt
+
+** If full path is not mentioned then it is relative to hdfs home directory. i.e., /home/Leela
+
+Hadoop Web UI:
+http://localhost:50070/
+
+
+*** 
+jps - will provide all java running processes/deamons
+NodeManager
+ResourceManager
+NameNode
+SecondaryNameNode
+DataNode
+JobHistoryServer
+
+In a distributed environment 
+Controller Node runs a deamon called NameNode
+Slave Nodes runs a deamon called DataNode
+ControllerBackup runs a deamon called SecondaryNameNode
+
+DataNode manages hdfs files on each slave
+
+NameNode co-ordinates replication of each files and allows us to interact with the file system as like everything was on a single place.
+
+SecondaryNameNode continuously log information about datanodes so that system can be recovered if controller node fails
+
+For map reduce jobs each slave runs a deamon called NodeManager and controller runs a deamon called ResourceManager
+When we submit a map reduce job to hadoop, Resource Manager receives the job and splits to node managers to do the processing.
+
+JobHistoryServer lets us view the stats and log files for jobs that are completed.
+
+
+If you are running hadoop in pseudo distributed mode then we need to edit this line in 
+$HADOOP_PREFIX/libexec/hadoop-config.sh
+
+from
+ export JAVA_HOME=($(/usr/libexec/java_home))
+to
+ export JAVA_HOME=$(/usr/libexec/java_home)
+
+
+Map Reduce Process Flow
+We can provide a file with comma separated values of key and value in this case both will feed as key and value
+If we don’t have comma separated key and value then hadoop takes line number as key and line as value.
+
+Map method will be called once per each line in the input
+Reduce method will be called once per each key after the shuffle step.
+
+*** After the map step each slave node will produce a map of key and values and these keys can have multiple records in the SAME NODE AND IN OTHER NODES as well.
+*** so if we want to run the reduce step(i.e., aggregate) we need all keys that are present in the CLUSTER(i.e., multiple nodes), on a single slave node.
+*** Shuffle will do this functionality of moving keys with same name to one node, so that reduce can aggregate the values.
+
+The process flow looks like
+MAP -> SHUFFLE -> REDUCE
+
+
+Some times there are lots of keys with same key on multiple nodes, so moving these large number of keys of same name to a single node during shuffle requires lot of time(because all nodes talk to each other and there will be network traffic between nodes)
+
+It will better if we do extra aggregation step on each node to reduce the records for a key before shuffle takes place and this extra step is Combine, This will speed up shuffle step as keys with same name are aggregated and it needs to move less keys with same name to same node.
+
+This will also makes the reduce step faster because aggregation of key on each node happened in combine step and it will have list with small size to aggregate.
+
+The process flow looks like
+MAP -> COMBINE -> SHUFFLE -> REDUCE
+
+Combine will also extend the Reducer class and the same reduce code can be reused because combine is also doing the same thing as reduce does i.e., aggregation but combine will do aggregation of data before shuffle step, here all keys may not be present on that node but we will do this so that we can speed up the shuffle and reduce step and after shuffle we will get keys with same name on a single node and here full aggregation happens 
+
+Reduce will do aggregation after the shuffle step
+
+
+**** Combine Step may or may not run in the process flow and hadoop will determine whether to run or not based on quantity of data that it receives, If the data is received is small then hadoop might skip combine process. So it is important that our code should produce same results with or without combine step our combine step should not alter the data instead it should only do aggregation.
+
+Below is warning message you will receive when running the job if combine step is skipped.
+Warning: The combine step might not run.. or it might run multiple times on each node!
+
+*** If the reducer code changes the data then this reducer is not a valid Combiner because of above reason. we need to write a separate combiner for this.
+
+*** The input and output format of combine step must match exactly, if it different then it is altering data it cannot be used as a combiner.
+
+
+*** Combiner will aggregate keys with same name on a single slave node(which have partial data as this key can be present in another slave node as well) where as Reduce will aggregate keys with same name on a single node but during this step keys with same name will be moved to single node during shuffle step.
+
+*** Shuffle will ONLY move the keys with same name to a single node
+*** It will not provide a list of values with the same key and this process is taken care by hadoop internally when data is fed to combiner and reducer step
+
+*** Combiner can run multiple times on a single node if we have multiple files as input.
+
+
+org.apache.hadoop.mapreduce.lib -> Hadoop 2 Library Package
+org.apache.hadoop.mapred.lib -> Hadoop 1 Library Package
+So if you need to import any thing then import from mapreduce.lib
+
+Hadoop Custom Datatypes
+If you want to implement Custom Datatype then 
+Keys must implement WritableComparable
+Values must implement Writable
+
+When we implement Writable interface below are the 2 methods we need to override
+
+// This method is used to serialise data 
+public void write(DataOutput arg0) throws IOException  {
+
+}
+
+// This method is used to deserialise data
+public void readFields(DataInput arg0) throws IOException {
+
+}
+
+
+*** The order of fields that we mentioned in write method MUST match with order of fields that we mentioned in readFields method because during deserialisation hadoop will just get the .get(0), .get(1), …
+
+*** This Writable class must contain a No argument constructor otherwise hadoop cannot do serialisation and deserialisation 
+
+public class AverageWritable implements Writable {
+
+	private double total;
+	private long noOfRecords;
+	
+	public AverageWritable() {
+		
+	}
+	
+	@Override
+	public void readFields(DataInput arg0) throws IOException {
+		this.total = arg0.readDouble();
+		this.noOfRecords = arg0.readLong();
+	}
+
+	@Override
+	public void write(DataOutput arg0) throws IOException {
+		arg0.writeDouble(total);
+		arg0.writeLong(noOfRecords);
+	}
+
+}
+
+
+Job Configuration:
+Upto now Hadoop is generating key as the line number and value as entire row, but if there is a key and values in your input file then you need to tweak the Job Configuration to tell hadoop that key is there in the input file
+
+Below 2 lines tell hadoop that key exists in the input file and the delimiter to extract the key.
+conf.set(“mapreduce.input.keyvaluelinerecordreader.key.value.separator”, “,”);
+job.setInputFormatClass(KeyValueTextInputFormat.class)
+
+** If the delimiter is tab then only below is enough as hadoop looks tab as a default delimiter
+job.setInputFormatClass(KeyValueTextInputFormat.class)
+
+File Formats:
+Input Formats:
+1. TextInputFormat - in this hadoop will take the key as line number and value as entire row
+2. KeyValueTextInputFormat - in this key and value is present in the file and by default it is separated by tab. we can tweak this with below line 
+conf.set(“mapreduce.input.keyvaluelinerecordreader.key.value.separator”, “,”);
+3. SequenceFileInputFormat - it is a compressed format which can be used to write information with less disk space, this is particularly useful when we run one map reduce after another map reduce (chaining map reduce) so that input for the second map reduce is the output of the first map reduce this will speed up the job because it requires less disk writing and reading.
+4. NLineInputFormat
+This Format option is useful in production system.
+If we have a large file then this file will be broken into smaller pieces which are called splits and each split is sent to a slave node.
+Suppose if a 8 node cluster and 600MB file and the default split size is 128 MB
+split = 600/128 =~5
+so only 5 nodes will be assigned and 3 nodes will not run the job
+To utilise all the nodes in the cluster we can mention how many number of lines each split should contain so that we can ensure every node is occupied, if we got more number of splits then multiple splits will be assigned to same slave node. This will make our cluster more efficient.
+
+Below is property that we need to specify
+job.getConfiguration().setInt(“mapreduce.input.lineinputformat.linespermap”, 1000);
+
+
+Output Formats:
+1. TextOutputFormat - provides key and value pair separated by tab.
+2. SequenceFileOutputFormat
+
+
+If we have a map reduce class and this class need to run with different input files which have key and values separated by a delimiter, where delimiter is determined at runtime 
+In this case we can’t hard code the delimiter. To solve this problem we have to pass the delimiter as a command line parameter
+Our map reduce should implement Tool and extends Configurable 
+to take these command line parameters.
+
+public class HousePriceAnalysisV3  extends Configured implements Tool{
+
+	public static void main(String[] args) throws Exception {
+		int result = ToolRunner.run(new Configuration(), new HousePriceAnalysisV3(), args);
+		System.exit(result);
+	}
+
+	@Override
+	public int run(String[] args) throws Exception {
+	
+	}
+}
+
+
+// Below 2 lines is needed in a distributed mode where we will 
+// just submit the job. but in standalone and pseudo distributed we need to use
+// return job.waitForCompletion(true) ? 0 : 1;
+// where it will wait for the job to complete.
+/*job.submit();
+return 0;*/
+		
+// Below line is only for standalone and Pseudo distributed mode where 
+// we will wait for job to be completed.
+// This is definitely not for production.
+return job.waitForCompletion(true)? 0 : 1;
+
+Command
+hadoop jar FirstHadoopProject.jar HousePriceAnalysisV3 -D mapreduce.input.keyvaluelinerecordreader.key.value.separator=, HousePrices.csv output
+
+hadoop jar FirstHadoopProject.jar HousePriceAnalysisV3 -D mapreduce.input.keyvaluelinerecordreader.key.value.separator=@ HousePrices2.csv output2
+
+
+Hadoop Jobs Console
+http://localhost:8088
+
+Hadoop File Browser Console
+http://localhost:50070
+
+*** If you are reading key value pair from input file then the types must be Text, Text even though value is in double it should be taken as Text as hadoop doesn’t do this conversion.
+
+*** If the output of first MR and input of second MR is SequenceFileFormat then their types must be SAME i.e., output types of first MR Reduce function and input types of second MR Map function.
+
+*** If the output types of Map and Reduce are different then we need to write below 4 lines.
+
+job.setMapOutputKeyClass(Text.class)
+job.setMapOutputValueClass(Text.class)
+
+job.setOutputKeyClass(Text.class)
+job.setOutputValueClass(LongWritable.class)
+
+But we didn’t do this in our jobs till now and will work, if the file format is NOT SEQUENCE FILE FORMAT.
+If File Format is Sequence File Format and the types of Map and Reduce stage are different then WE SHOULD WRITE BELOW 4 LINES.
+
+job.setMapOutputKeyClass(Text.class)
+job.setMapOutputValueClass(Text.class)
+
+job.setOutputKeyClass(Text.class)
+job.setOutputValueClass(LongWritable.class)
+
+Example:
+// If file format is Sequence File Format and 
+// map reduce output types are different below 4 lines are mandatory.
+job.setMapOutputKeyClass(Text.class);
+job.setMapOutputValueClass(LongWritable.class);
+			
+job.setOutputKeyClass(Text.class);
+job.setOutputValueClass(DoubleWritable.class);
+
+
+Pre and Post Processing:
+In Hadoop we can do preprocessing i.e., tasks before map task and post processing i.e., tasks after reduce task using below classes.
+ChainMapper
+ChainReducer
+
+*** All this pre and post processing tasks are mapper tasks.
+
+*** when we use Chain Mapper and Chain Reducer the output format of one job MUST ALWAYS MATCH the input format of next job.
+
+Optimising Map Reduce Jobs:
+Below are the potential bottlenecks
+1. Disk I/O
+2. Network I/O
+3. cpu/memory usage (Computational Intensity).
+
+Optimising Disk I/O
+Reduce file sizes where possible.
+1. use sequence file format - so that compressed files will be sent as the input to the next job
+2. use pre processing - so that we can filter out unwanted data/records.
+3. Optimise input data format - you can remove unnecessary data(i.e., columns) from the input file before loading into hadoop map reduce job, so that file size will be reduced.
+
+Optimising Network I/O
+1. use combiners - so that less amount of data needs to be moved across nodes during shuffle step.
+2. Sort the input data by key before it is loaded into hadoop map reduce job, so that data with same key will most likely on a same node and shuffle step has less data that needs to be moved across nodes.
+
+Optimising CPU/Memory 
+1. Code Efficiency. - avoiding unnecessary object creation so that garbage collection will not happen often.
+2. configuration options. 
+Every map task will run on a new jvm
+and reduce task will also run on a new jvm
+so atleast we need 2 jvms on a single node.
+if possible we can run pre processing tasks and map task on the same jam so that we can save some time in destroying existing jvm and starting new jvm.
+
+conf.set(“mapreduce.job.jvm.numtasks”, “10”);
+Here 10 tasks(either map or combine or reduce) will run on a single jvm
+
+-1 - means all tasks will run on same jvm
+1 - means only one task will run one jvm which is default in hadoop.
+
+Logging in Hadoop:
+Hadoop uses Apache Commons for Logging.
+
+Log sysLog = LogFactory.getLog(ClassName.class)
+
+sysLog.info(“some text”)
+sysLog.debug(“some text”)
+
+Enabling Debug Log Level through Command line.
+-D mapreduce.map.log.level=DEBUG
+-D mapreduce.reduce.log.level=DEBUG
+
+Enabling Debug Log Level through Configuration files.
+mapred-site.xml
+
+<property>
+<name>mapreduce.map.log.level</name>
+<value>DEBUG</value>
+</property>
+
+<property>
+<name>mapreduce.reduce.log.level</name>
+<value>DEBUG</value>
+</property>
+
+If logging has to happen based on a calculation condition and that calculation has to happen only in Debug mode then we can use below method.
+if(sysLog.isDebugEnabled()) {
+  if(calculate some thing) {
+     sysLog.debug(“some text”);
+  }
+}
+
+
+Counters:
+Counters are used for job metrics purpose.
+example : input map records, output map records, input reduce records etc
+
+Counter Creation:
+context.getCounter(someEnumValue).increment(); 
+
+
+CommonPhrases s3://vpp-fitness-posts/input s3://vpp-fitness-posts/output
+
+
+Secondary Sorting:
+Why Secondary Sorting is needed
+In our exam score analysis input to the reducer will be <subject, List<scores>>
+If we want to get max score for that subject then we need to iterate all scores and find the maximum value. This is because values in the list is not sorted.
+If the values in the list are sorted then we can get the first value and the time complexity will be O(1).
+So we need to Secondary Sorting technique to produce a sorted list to the reduce step.
+
+
+Suppose if we think like the key contains 
+    Key      Value
+chemistry,44 44
+chemistry,66 66
+chemistry,59 59
+
+then will during shuffle the input to the reduce step will be 
+    Key      List<Value>
+chemistry,44 {44}
+chemistry,59 {59}
+chemistry,66 {66}
+
+
+*** Key is sorted but Grouping for the key will not work as the keys are different, so there should be a way to tell hadoop to sort both values in the key and GROUP BY ONLY FIRST VALUE.
+
+For this process we need to define following.
+Key Contains 2 data items  - Custom Key.
+Sort by Both items - compareTo
+Group by one only - Comparator
+Shuffled onto the same node - Partitioner
+
+Map -partition-> Shuffle -Group-> -sort-> Reduce
+
+*** Here Shuffle step will do shuffling based on the partition number, not based on the key because at this point key contains 2 values(as Grouping is not done).
+After Shuffle step Group by one value will be done
+and after this our custom sort method will execute and this sorted order will be fed to Reduce step.
+
+*** Here Custom Key must implement WritableComparable.
+
+public class myPartitioner extends Partitioner {
+
+  public int getPartition(Key myKey,…, in numPartitions) {
+    return myKey.getSomeValue().hashCode()%numPartitions
+  }
+}
+
+Here is key is subject name
+
+*** Here numPartitions are total number of slave nodes
+
+hashCode = 12675616
+———————————————————  = 211602
+numPartitions = 6
+
+So here the remainder is 4
+so that key will go on slave number 4
+and the remainder value never exceed total number of slave nodes.
+
+
+// Here Shuffle step cannot do Shuffling based on a key as the key is custom key which contains 2 values
+// so all the keys will be different, so we will give partition number so that shuffle step will do shuffle
+// based on partition number. here we need to do shuffling based on subject we will take hashcode of subject
+// and do a module operator with number of slave nodes so that the partition number will not exceed number of slaves in the cluster.
+// so based on the partition number shuffle step will move that chuck of data to that slave node.
+//*** numPartitions means number of slave nodes in the cluster.
+@Override
+public int getPartition(ExamSubjectAndScoreKey arg0, LongWritable arg1, int numPartitions) {
+return arg0.getSubject().hashCode()%numPartitions;
+}
+
+
+
+Joining Data using Secondary Sort:
+Suppose we have 2 files in different formats and we need to combine data in these 2 files to get the required data, then we can opt for
+1. manual process i.e., series of map reduce jobs
+2. Reduce side Join or Map Side Join
+Normally we will use only Reduce Side Join
+
+Manual Process Steps
+MR Job1 - convert file1 to right format.
+MR Job2 - convert file2 to right format
+MR Job3 - combine file1 and file2
+MR Job4 - process combined file.
+
+
+In Reduce Side Join we will avoid MR Job1 and MR Job2 to convert into right format instead we will keep the same structure of the file and add a tag to indicate the data is from file1 or file2.
+
+In the mapper we will use a custom key which has (common-column,tag-value).
+Since many records in the second file map to one  record in first file(i.e., one to many relationship)
+we can sort both common-column,tag-value so that the first record will be the record from first file and remaining records will be from second file.
+so the reducer can take the first record as key and combines other records to produce the output.
+
+
+This technique will work for One to Many and One to One relationship, 
+but will not work for Many to Many relationship.
+
+
+Tagging the file 
+Path in1 = new Path(args[0]); //country file
+Path in2 = new Path(args[1]); //sales file
+
+Configuration conf = new Configuration();
+conf.set(in1.getName(), "1"); //set up for tag
+conf.set(in2.getName(), "2"); //set up for tag
+
+
+Getting the file name in mapper step
+//find out the file name
+FileSplit fileSplit = (FileSplit)context.getInputSplit();
+String fileName = fileSplit.getPath().getName();
+
+
+
+Map Reduce with Relational Database:
+When we are reading data from a database then we need to be very careful because
+Each map task will generate a read from the database.
+In a distributed environment where our jobs will be run on multiple nodes, so all these map tasks will generate a read from the database which will overload the database.
+Data must be fixed else the results will be inconsistent.
+
+Writing data to the database will have less problems as the output data that needs to be written is less.
+Here writing to a database is a slower task when compared writing to a file.
+
+
+How to load a script file into mysql db.
+mysql -uroot -ppassword<SalesDBScript.sql
+
+If we want to read or write to a table in a database then we need to create a class which implements DBWritable Interface.
+
+This class represents record in the table.
+
+
+Reading Record from DB:
+DBConfiguration.configureDB(conf, "driver calss", "constring");
+		
+String[] fieldNames = {"id", "region", "date", "quantity", "price"};
+DBInputFormat.setInput(job, SalesRecord.class, "sales", null, null, fieldNames);
+
+Writing Record to DB:
+String[] resultFieldNames = {"region", "quantity"};
+DBOutputFormat.setOutput(job, "results", resultFieldNames);
+
+If we want to use any external library that is not part of Hadoop Environment then we have to use below.
+
+In Standalone mode
+export HADOOP_CLASSPATH=fullPathToJarFile
+
+In Pseudo Distributed Mode
+hadoop jar myjar.jar myClass -libjars=fullPathToJarFile args
+hadoop jar myjar.jar myClass -libjars=${HADOOP_CLASSPATH} args
